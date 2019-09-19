@@ -10,10 +10,11 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-chdir('c:\\users\\jeryl\\desktop\\Python\\kaggle')
+import statsmodels.api as sm
+chdir('c:\\users\\jeryl\\desktop\\Python\\kaggle\\Graduate admissions')
 
 #Reading data
-train = pd.read_csv('Admission_Predict_Ver1.1.csv', header=0)
+train = pd.read_csv('Admission.csv', header=0)
 #Dropping irrelevant columns
 train =  train.drop(['Serial No.'], axis=1)
 #Split data into features and labels
@@ -21,7 +22,7 @@ X,y=train.iloc[:,0:7], train.iloc[:,7]
 
 #EDA
 corr = train.corr()
-sns.heatmap(corr, annot=True)
+sns.heatmap(corr, annot=True, vmin=0, vmax=1)
 plt.show()
 
 #Scaler is not necessary as it does not affect prediction results
@@ -36,6 +37,8 @@ lr.fit(X_train, y_train)
 y_pred = lr.predict(X_test)
 print(mean_squared_error(y_test, y_pred))
 print(lr.score(X_test,y_test))
+print(lr.coef_)
+print(lr.intercept_)
 
 #Cross-Validation
 cv_results = cross_val_score(lr, rescaledX, y, cv=5, scoring='neg_mean_squared_error')
@@ -48,4 +51,8 @@ plt.plot(x, y_pred, ':b',label='Predicted', color='b')
 plt.legend()
 plt.show()  
 
-
+#Finding standard errors of coefficients
+features = sm.add_constant(X_train)
+model = sm.OLS(y_train, features)
+results = model.fit()
+print(results.summary())
